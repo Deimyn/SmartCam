@@ -1,4 +1,4 @@
-Initialistaion :
+Initialisation :
 
 Make sure you have all the [requirements](https://github.com/Deimyn/SmartCam/blob/main/requirements.txt) in your environment.
 
