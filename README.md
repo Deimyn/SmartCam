@@ -1,6 +1,6 @@
+Initialistaion :
 
-
-How to use :
+Make sure you have all the requirements in your environment 
 
 Once the repo is cloned create a directory called "build" then use cmake to build and compile :
 
@@ -9,7 +9,11 @@ mkdir build && cd build
 cmake ..
 make
 ```
-Then in build/ :
+
+ 
+How to use :
+
+In build/ :
 ```
 ./webrtc_server
 ```
