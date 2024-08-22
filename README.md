@@ -1,7 +1,6 @@
 Initialistaion :
 
-Make sure you have all the requirements in your environment 
-
+Make sure you have all the [requirements](https://github.com/Deimyn/SmartCam/blob/main/requirements.txt) in your environment.
 Once the repo is cloned create a directory called "build" then use cmake to build and compile :
 
 ```
