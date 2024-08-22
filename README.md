@@ -24,4 +24,4 @@ python3 -m http.server 8080
 ```
 
 Finally go check the at http://localhost:8080/
-You can also check [usefull]() for testing purposes. 
+You can also check [usefull](https://github.com/Deimyn/SmartCam/blob/main/usefull.txt) for testing purposes. 
