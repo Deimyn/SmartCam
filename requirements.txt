@@ -1,0 +1,3 @@
+This project is intended to run on an android support.
+The devloppement was made under Ubuntu 24.04 on a Raspberry Pi 4 B.
+
