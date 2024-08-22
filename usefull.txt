@@ -1,1 +1,18 @@
-oui
+-List video devices on your system:
+ls -l /dev/video*
+
+-Test gstreamer pipeline with random noise stream:
+gst-launch-1.0 -v videotestsrc pattern=snow ! video/x-raw,width=1288,height=720 ! autovideosink
+
+-Test gstreamer pipeline with camera stream:
+gst-launch-1.0 v4l2src device=/dev/video0 ! videoconvert ! autovideosink
+
+-Test gstreamer pipeline with multiple cameras stream:
+gst-launch-1.0 \
+    compositor name=mix sink_0::xpos=0 sink_0::ypos=0 sink_1::xpos=640 sink_1::ypos=0 ! videoconvert ! autovideosink \
+    v4l2src device=/dev/video17 ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! mix.sink_1 \
+    v4l2src device=/dev/video4 ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! mix.sink_0
+
+-List usage of port and kill the porcess to free it:
+sudo lsof -i :8000
+sudo kill -9 <PID>
