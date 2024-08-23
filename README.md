@@ -20,7 +20,7 @@ In build/ :
 
 and in public/ :
 ```
-python3 -m http.server 8080
+python3 start_server.py
 ```
 
 Finally go check the at http://localhost:8080/
