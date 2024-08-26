@@ -23,5 +23,6 @@ and in public/ :
 python3 webserver.py
 ```
 
-Finally go check the at http://localhost:8080/
+Finally go check the at http://localhost:8080/ (on any device in the same network)
+
 You can also check [usefull](https://github.com/Deimyn/SmartCam/blob/main/usefull.txt) for testing purposes. 
