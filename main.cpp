@@ -83,66 +83,14 @@ void on_ice_candidate(GstElement *webrtc, guint mlineindex, gchar *candidate, gp
   send_ice_candidate_message(*ws, mlineindex, candidate);
 }
 
-void handle_websocket_session(tcp::socket socket)
-{
-    try
-    {
+void handle_websocket_session(tcp::socket socket) {
+    try {
         websocket::stream<tcp::socket> ws{std::move(socket)};
         ws.accept();
 
         std::cout << "WebSocket connection accepted" << std::endl;
 
-        GstStateChangeReturn ret;
-        GError *error = NULL;
-
-        pipeline = gst_pipeline_new("pipeline");
-        GstElement *v4l2src = gst_element_factory_make("v4l2src", "source");
-        GstElement *videoconvert = gst_element_factory_make("videoconvert", "convert");
-        GstElement *queue = gst_element_factory_make("queue", "queue");
-        GstElement *vp8enc = gst_element_factory_make("vp8enc", "encoder");
-        GstElement *rtpvp8pay = gst_element_factory_make("rtpvp8pay", "pay");
-        webrtcbin = gst_element_factory_make("webrtcbin", "sendrecv");
-
-        if (!pipeline || !v4l2src || !videoconvert || !queue || !vp8enc || !rtpvp8pay || !webrtcbin) {
-            g_printerr("Not all elements could be created.\n");
-            return;
-        }
-
-        // Set the device property for v4l2src
-        g_object_set(v4l2src, "device", "/dev/video4", NULL);
-      	g_object_set(vp8enc, "deadline", 1, NULL);
-        // g_object_set(vp8enc, "target-bitrate", 1000000, "cpu-used", 4, "deadline", G_GINT64_CONSTANT(33333), NULL);
-
-        gst_bin_add_many(GST_BIN(pipeline), v4l2src, videoconvert, queue, vp8enc, rtpvp8pay, webrtcbin, NULL);
-
-        if (!gst_element_link_many(v4l2src, videoconvert, queue, vp8enc, rtpvp8pay, NULL)) {
-            g_printerr("Elements could not be linked.\n");
-            gst_object_unref(pipeline);
-            return;
-        }
-
-        GstPad *rtp_src_pad = gst_element_get_static_pad(rtpvp8pay, "src");
-        GstPad *webrtc_sink_pad = gst_element_request_pad_simple(webrtcbin, "sink_%u");
-        gst_pad_link(rtp_src_pad, webrtc_sink_pad);
-        gst_object_unref(rtp_src_pad);
-        gst_object_unref(webrtc_sink_pad);
-
-        g_signal_connect(webrtcbin, "on-negotiation-needed", G_CALLBACK(on_negotiation_needed), &ws);
-        g_signal_connect(webrtcbin, "on-ice-candidate", G_CALLBACK(on_ice_candidate), &ws);
-
-        ret = gst_element_set_state(pipeline, GST_STATE_PLAYING);
-
-        if (ret == GST_STATE_CHANGE_FAILURE)
-        {
-            g_printerr("Unable to set the pipeline to the playing state.\n");
-            gst_object_unref(pipeline);
-            return;
-        }
-
-        std::cout << "GStreamer pipeline set to playing" << std::endl;
-
-        for (;;)
-        {
+        for (;;) {
             beast::flat_buffer buffer;
             ws.read(buffer);
 
@@ -151,10 +99,60 @@ void handle_websocket_session(tcp::socket socket)
             object obj = jv.as_object();
             std::string type = obj["type"].as_string().c_str();
 
-            if (type == "offer")
-            {
-                std::cout << "Received offer: " << text << std::endl;
+            if (type == "start") {
+                std::string deviceId = obj["deviceId"].as_string().c_str();
+                std::cout << "Selected device: " << deviceId << std::endl;
 
+                GstStateChangeReturn ret;
+                GError *error = NULL;
+
+                pipeline = gst_pipeline_new("pipeline");
+                GstElement *v4l2src = gst_element_factory_make("v4l2src", "source");
+                GstElement *videoconvert = gst_element_factory_make("videoconvert", "convert");
+                GstElement *queue = gst_element_factory_make("queue", "queue");
+                GstElement *vp8enc = gst_element_factory_make("vp8enc", "encoder");
+                GstElement *rtpvp8pay = gst_element_factory_make("rtpvp8pay", "pay");
+                webrtcbin = gst_element_factory_make("webrtcbin", "sendrecv");
+
+                if (!pipeline || !v4l2src || !videoconvert || !queue || !vp8enc || !rtpvp8pay || !webrtcbin) {
+                    g_printerr("Not all elements could be created.\n");
+                    return;
+                }
+
+                // Set the selected device property for v4l2src
+                g_object_set(v4l2src, "device", deviceId.c_str(), NULL);
+                g_object_set(vp8enc, "deadline", 1, NULL);
+
+                gst_bin_add_many(GST_BIN(pipeline), v4l2src, videoconvert, queue, vp8enc, rtpvp8pay, webrtcbin, NULL);
+
+                if (!gst_element_link_many(v4l2src, videoconvert, queue, vp8enc, rtpvp8pay, NULL)) {
+                    g_printerr("Elements could not be linked.\n");
+                    gst_object_unref(pipeline);
+                    return;
+                }
+
+                GstPad *rtp_src_pad = gst_element_get_static_pad(rtpvp8pay, "src");
+                GstPad *webrtc_sink_pad = gst_element_request_pad_simple(webrtcbin, "sink_%u");
+                if (gst_pad_link(rtp_src_pad, webrtc_sink_pad) != GST_PAD_LINK_OK) {
+                    g_printerr("Failed to link pads.\n");
+                    gst_object_unref(pipeline);
+                    return;
+                }
+                gst_object_unref(rtp_src_pad);
+                gst_object_unref(webrtc_sink_pad);
+
+                g_signal_connect(webrtcbin, "on-negotiation-needed", G_CALLBACK(on_negotiation_needed), &ws);
+                g_signal_connect(webrtcbin, "on-ice-candidate", G_CALLBACK(on_ice_candidate), &ws);
+
+                ret = gst_element_set_state(pipeline, GST_STATE_PLAYING);
+                if (ret == GST_STATE_CHANGE_FAILURE) {
+                    g_printerr("Unable to set the pipeline to the playing state.\n");
+                    gst_object_unref(pipeline);
+                    return;
+                }
+
+                std::cout << "GStreamer pipeline set to playing" << std::endl;
+            } else if (type == "offer") {
                 std::string sdp = obj["sdp"].as_string().c_str();
 
                 GstSDPMessage *sdp_message;
@@ -163,31 +161,18 @@ void handle_websocket_session(tcp::socket socket)
                 GstPromise *promise = gst_promise_new_with_change_func(on_set_remote_description, &ws, NULL);
                 g_signal_emit_by_name(webrtcbin, "set-remote-description", offer, promise);
                 gst_webrtc_session_description_free(offer);
-
-                std::cout << "Setting remote description" << std::endl;
-            }
-            else if (type == "candidate")
-            {
-                std::cout << "Received ICE candidate: " << text << std::endl;
-
+            } else if (type == "candidate") {
                 object ice = obj["ice"].as_object();
                 std::string candidate = ice["candidate"].as_string().c_str();
                 guint sdpMLineIndex = ice["sdpMLineIndex"].as_int64();
                 g_signal_emit_by_name(webrtcbin, "add-ice-candidate", sdpMLineIndex, candidate.c_str());
-
-                std::cout << "Added ICE candidate" << std::endl;
             }
         }
-    }
-    catch (beast::system_error const& se)
-    {
-        if (se.code() != websocket::error::closed)
-        {
+    } catch (beast::system_error const& se) {
+        if (se.code() != websocket::error::closed) {
             std::cerr << "Error: " << se.code().message() << std::endl;
         }
-    }
-    catch (std::exception const& e)
-    {
+    } catch (std::exception const& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
     }
 }
