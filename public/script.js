@@ -12,8 +12,10 @@ startButton.addEventListener('click', async () => {
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
     });
 
-    const ip = window.location.hostname;
-    signaling = new WebSocket(`ws://${ip}:8000/ws`);
+    //signaling = new WebSocket(`ws://172.16.80.17:8000/ws`);
+
+    const machine1_ip = 'MACHINE_1_IP_PLACEHOLDER';
+    const signaling = new WebSocket(`ws://${machine1_ip}:8000/ws`);
 
     signaling.onopen = async () => {
         console.log('WebSocket connection established');
