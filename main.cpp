@@ -110,7 +110,8 @@ void handle_websocket_session(tcp::socket socket)
 
         // Set the device property for v4l2src
         g_object_set(v4l2src, "device", "/dev/video4", NULL);
-        g_object_set(vp8enc, "deadline", 1, NULL);
+      	g_object_set(vp8enc, "deadline", 1, NULL);
+        // g_object_set(vp8enc, "target-bitrate", 1000000, "cpu-used", 4, "deadline", G_GINT64_CONSTANT(33333), NULL);
 
         gst_bin_add_many(GST_BIN(pipeline), v4l2src, videoconvert, queue, vp8enc, rtpvp8pay, webrtcbin, NULL);
 
