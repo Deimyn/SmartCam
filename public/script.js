@@ -12,14 +12,12 @@ startButton.addEventListener('click', async () => {
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
     });
 
-    //signaling = new WebSocket(`ws://172.16.80.17:8000/ws`);
-
     const machine1_ip = 'MACHINE_1_IP_PLACEHOLDER';
-    const signaling = new WebSocket(`ws://${machine1_ip}:8000/ws`);
+    signaling = new WebSocket(`ws://${machine1_ip}:8000/ws`);
 
     signaling.onopen = async () => {
         console.log('WebSocket connection established');
-        
+
         pc.onicecandidate = (event) => {
             if (event.candidate) {
                 console.log('Sending ICE candidate:', event.candidate);
@@ -63,16 +61,26 @@ startButton.addEventListener('click', async () => {
 
 stopButton.addEventListener('click', () => {
     if (pc) {
+        // Close all tracks
+        pc.getSenders().forEach(sender => sender.track && sender.track.stop());
+        pc.getReceivers().forEach(receiver => receiver.track && receiver.track.stop());
+
+        // Close the PeerConnection
         pc.close();
         pc = null;
+        console.log('RTCPeerConnection closed');
     }
 
     if (signaling) {
         signaling.close();
         signaling = null;
+        console.log('WebSocket connection closed');
     }
 
+    // Clear the video element
     video.srcObject = null;
+
+    // Reset buttons
     startButton.disabled = false;
     stopButton.disabled = true;
 });
