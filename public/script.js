@@ -1,14 +1,8 @@
 const video = document.getElementById('videoStream');
 const startButton = document.getElementById('startButton');
 const stopButton = document.getElementById('stopButton');
-const videoSelect = document.getElementById('videoSelect');
 let pc = null;
 let signaling = null;
-let selectedDeviceId = null;
-
-navigator.mediaDevices.enumerateDevices().then(gotDevices);
-
-videoSelect.onchange = () => selectedDeviceId = videoSelect.value;
 
 startButton.addEventListener('click', async () => {
     startButton.disabled = true;
@@ -23,7 +17,7 @@ startButton.addEventListener('click', async () => {
 
     signaling.onopen = async () => {
         console.log('WebSocket connection established');
-        
+
         pc.onicecandidate = (event) => {
             if (event.candidate) {
                 console.log('Sending ICE candidate:', event.candidate);
@@ -37,27 +31,29 @@ startButton.addEventListener('click', async () => {
         pc.ontrack = (event) => {
             console.log('Received track:', event);
             if (event.track.kind === 'video') {
+                console.log('Attaching video track to video element');
                 video.srcObject = event.streams[0];
             }
         };
 
-        const constraints = {
-            video: { deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined }
-        };
-
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+        pc.addTransceiver('video', { direction: 'recvonly' });
 
         const offer = await pc.createOffer();
+        console.log('Created offer:', offer);
         await pc.setLocalDescription(offer);
+        console.log('Set local description with offer');
         signaling.send(JSON.stringify({ type: 'offer', sdp: pc.localDescription.sdp }));
     };
 
     signaling.onmessage = async (event) => {
         const data = JSON.parse(event.data);
+        console.log('Received signaling message:', data);
+
         if (data.type === 'answer') {
+            console.log('Setting remote description with answer');
             await pc.setRemoteDescription(new RTCSessionDescription(data));
         } else if (data.type === 'candidate') {
+            console.log('Adding ICE candidate:', data.ice);
             await pc.addIceCandidate(new RTCIceCandidate(data.ice));
         }
     };
@@ -65,28 +61,26 @@ startButton.addEventListener('click', async () => {
 
 stopButton.addEventListener('click', () => {
     if (pc) {
+        // Close all tracks
+        pc.getSenders().forEach(sender => sender.track && sender.track.stop());
+        pc.getReceivers().forEach(receiver => receiver.track && receiver.track.stop());
+
+        // Close the PeerConnection
         pc.close();
         pc = null;
+        console.log('RTCPeerConnection closed');
     }
 
     if (signaling) {
         signaling.close();
         signaling = null;
+        console.log('WebSocket connection closed');
     }
 
+    // Clear the video element
     video.srcObject = null;
+
+    // Reset buttons
     startButton.disabled = false;
     stopButton.disabled = true;
 });
-
-function gotDevices(deviceInfos) {
-    for (let i = 0; i !== deviceInfos.length; ++i) {
-        const deviceInfo = deviceInfos[i];
-        const option = document.createElement('option');
-        option.value = deviceInfo.deviceId;
-        if (deviceInfo.kind === 'videoinput') {
-            option.text = deviceInfo.label || `Camera ${videoSelect.length + 1}`;
-            videoSelect.appendChild(option);
-        }
-    }
-}
