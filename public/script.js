@@ -66,6 +66,7 @@ stopButton.addEventListener('click', () => {
         pc.getReceivers().forEach(receiver => receiver.track && receiver.track.stop());
 
         // Close the PeerConnection
+        pc.getSenders().forEach(sender => pc.removeTrack(sender));
         pc.close();
         pc = null;
         console.log('RTCPeerConnection closed');
