@@ -15,7 +15,8 @@ def get_local_ip():
     return ip
 
 def get_machine1_ip():
-    """Get the IP address of Machine 1."""
+    '''
+    """Get the IP address of Machine 1 dynamically but if it's the defaulf gateway"""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         # We assume Machine 1 is the default gateway in the same network
@@ -26,6 +27,12 @@ def get_machine1_ip():
     finally:
         s.close()
     return machine1_ip
+    '''
+
+    """Manually provide the IP of Machine 1"""
+    machine1_ip = "172.16.80.22" # replace with webrtc machine IP
+    return machine1_ip
+
 
 class CustomHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -48,7 +55,9 @@ if __name__ == "__main__":
     ip = get_local_ip()
     port = 8080
     server_address = (ip, port)
+    machine1_ip = get_machine1_ip()
 
     httpd = HTTPServer(server_address, CustomHandler)
     print(f"Serving HTTP on {ip} port {port} (http://{ip}:{port}/) ...")
+    print(f"Local Ip :{ip} and machine1 Ip :{machine1_ip}")
     httpd.serve_forever()
