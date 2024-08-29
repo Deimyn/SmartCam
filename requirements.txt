@@ -27,3 +27,13 @@ sudo apt-get install -y \
     v4l-utils \
     libboost-all-dev \
     libssl-dev
+
+if needed : 
+
+git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git
+cd gst-plugins-bad
+
+meson build
+cd build
+ninja
+sudo ninja install
