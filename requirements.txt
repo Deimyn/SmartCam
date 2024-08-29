@@ -1,3 +1,29 @@
 This project is intended to run on an android support.
 The devloppement was made under Ubuntu 24.04 on a Raspberry Pi 4 B.
 
+sudo apt-get update
+sudo apt-get install -y \
+    gstreamer1.0-tools \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    gstreamer1.0-gl \
+    gstreamer1.0-rtsp \
+    gstreamer1.0-x \
+    gstreamer1.0-pulseaudio \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    libgstreamer-plugins-good1.0-dev \
+    libgstreamer-plugins-bad1.0-dev \
+    libglib2.0-dev \
+    cmake \
+    build-essential \
+    gcc \
+    g++ \
+    libwebsockets-dev \
+    x264 \
+    v4l-utils \
+    libboost-all-dev \
+    libssl-dev
