@@ -1,6 +1,8 @@
 This project is intended to run on an android support.
 The devloppement was made under Ubuntu 24.04 on a Raspberry Pi 4 B.
 
+Essential packages to get :
+
 sudo apt-get update
 sudo apt-get install -y \
     gstreamer1.0-tools \
@@ -28,7 +30,8 @@ sudo apt-get install -y \
     libboost-all-dev \
     libssl-dev
 
-if needed : 
+
+Only if needed : 
 
 git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git
 cd gst-plugins-bad
