@@ -1,3 +1,5 @@
+Here is a few command lines that can be usefull for developing.
+
 -List video devices on your system:
 ls -l /dev/video*
 
