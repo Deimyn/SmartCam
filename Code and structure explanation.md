@@ -109,7 +109,7 @@ The most important components of WebRTC are:
 5.	Interactive Connectivity Establishment (ICE): A framework to allow WebRTC to traverse NATs (Network Address Translators) and firewalls.
 
 
-![WebRTC diagram]()
+![WebRTC diagram](https://github.com/Deimyn/SmartCam/blob/main/webrtc.png)
 
 This project implements a WebRTC-based video streaming system, consisting of a server-side C++ application (with GStreamer and Boost) and a client-side web interface. Here's how it functions:
 
