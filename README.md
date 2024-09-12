@@ -25,4 +25,5 @@ python3 webserver.py
 
 Finally go check the at ht<span>tp://givenIP:8080/ (on any device in the same network).
 
-You can also check [usefull](https://github.com/Deimyn/SmartCam/blob/main/usefull.txt) for testing purposes. 
+You can check [usefull](https://github.com/Deimyn/SmartCam/blob/main/usefull.txt) for testing purposes and also [code and structure explaination](https://github.com/Deimyn/SmartCam/blob/main/Code%20and%20structure%20explanation.md). 
+
