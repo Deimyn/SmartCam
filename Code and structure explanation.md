@@ -1,32 +1,43 @@
+Here is some explanations about the different code files:
+
 1. main.cpp
-This file contains the main C++ code that handles the WebRTC streaming server using GStreamer and Boost libraries.
+
+It contains the main C++ code that handles the WebRTC streaming server using GStreamer and Boost libraries.
+
 Key Libraries:
-•	GStreamer: Used for multimedia processing, particularly the WebRTC-related handling.
-•	Boost.Beast: For handling WebSocket communication.
-•	Boost.Asio: Networking support (TCP/IP).
-•	Boost.JSON: JSON processing.
+
+-	GStreamer: Used for multimedia processing, particularly the WebRTC-related handling.
+-	Boost.Beast: For handling WebSocket communication.
+-	Boost.Asio: Networking support (TCP/IP).
+- Boost.JSON: JSON processing.
+
 Classes and Functions:
-•	class StreamSession: Manages the media pipeline and WebRTC session for streaming.
-o	StreamSession(websocket::stream<tcp::socket>& ws): Constructor that initializes the WebRTC pipeline and stores the WebSocket stream reference.
-o	~StreamSession(): Destructor that stops the pipeline and cleans up resources.
-o	void start(): Starts the GStreamer pipeline, beginning the media stream.
-o	void stop(): Stops the pipeline and releases resources.
-o	void setup_pipeline(): Sets up the GStreamer pipeline elements and links them together.
-	Components include:
-	v4l2src: Captures video from the camera.
-	videoconvert: Converts video formats.
-	queue: Buffers the stream.
-	vp8enc: Encodes the video in VP8 format.
-	rtpvp8pay: Encapsulates the encoded video in RTP packets.
-	webrtcbin: Manages WebRTC-related tasks, including SDP negotiation and ICE candidates.
-	It also connects necessary signals for handling negotiation and ICE candidates.
-o	void handle_sdp_offer(const std::string& sdp): Processes the SDP offer received from the client and initiates the WebRTC connection.
-o	void handle_ice_candidate(const boost::json::object& ice): Handles incoming ICE candidates and adds them to the WebRTC session.
-o	void on_answer_created(GstPromise *promise): Called when the WebRTC answer is created, sends the answer to the client via WebSocket.
-o	void on_set_remote_description(GstPromise *promise): Sets the remote SDP description and triggers the creation of the answer.
-•	void handle_websocket_session(tcp::socket socket): Handles the WebSocket session, receiving SDP offers and ICE candidates from the client, and forwarding them to the StreamSession.
-•	void start_server(): Initializes the WebSocket server, accepting connections and handling them in separate threads.
-•	int main(int argc, char* argv[]): Entry point of the program, initializes GStreamer, and starts the server.
+
+- class StreamSession: Manages the media pipeline and WebRTC session for streaming.
+-	StreamSession(websocket::stream<tcp::socket>& ws): Constructor that initializes the WebRTC pipeline and stores the WebSocket stream reference.
+-	~StreamSession(): Destructor that stops the pipeline and cleans up resources.
+-	void start(): Starts the GStreamer pipeline, beginning the media stream.
+-	void stop(): Stops the pipeline and releases resources.
+-	void setup_pipeline(): Sets up the GStreamer pipeline elements and links them together.
+
+> Components include:
+> - v4l2src: Captures video from the camera.
+> -	videoconvert: Converts video formats.
+> -	queue: Buffers the stream.
+> -	vp8enc: Encodes the video in VP8 format.
+> -	rtpvp8pay: Encapsulates the encoded video in RTP packets.
+> -	webrtcbin: Manages WebRTC-related tasks, including SDP negotiation and ICE candidates.
+
+It also connects necessary signals for handling negotiation and ICE candidates.
+
+-	void handle_sdp_offer(const std::string& sdp): Processes the SDP offer received from the client and initiates the WebRTC connection.
+-	void handle_ice_candidate(const boost::json::object& ice): Handles incoming ICE candidates and adds them to the WebRTC session.
+-	void on_answer_created(GstPromise *promise): Called when the WebRTC answer is created, sends the answer to the client via WebSocket.
+-	void on_set_remote_description(GstPromise *promise): Sets the remote SDP description and triggers the creation of the answer.
+-	void handle_websocket_session(tcp::socket socket): Handles the WebSocket session, receiving SDP offers and ICE candidates from the client, and forwarding them to the StreamSession.
+-	void start_server(): Initializes the WebSocket server, accepting connections and handling them in separate threads.
+-	int main(int argc, char* argv[]): Entry point of the program, initializes GStreamer, and starts the server.
+  
 2. CMakeLists.txt
 This file contains the build configuration for CMake, which compiles your project.
 Key Elements:
@@ -38,7 +49,7 @@ Key Elements:
 •	include_directories(${GST_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}): Adds include directories for GStreamer and Boost.
 •	add_executable(webrtc_server main.cpp): Defines the executable target for the project.
 •	target_link_libraries(webrtc_server ${GST_LIBRARIES} Boost::system Boost::filesystem Boost::json): Links the GStreamer and Boost libraries to the executable.
-3. index.html
+4. index.html
 This is the main HTML file that provides a user interface for starting and stopping the WebRTC stream.
 Structure:
 •	<head>: Contains metadata, including the title and a link to the CSS stylesheet.
@@ -50,7 +61,7 @@ o	<main>: Contains the video element and control buttons.
 	<div class="button-container">: Contains "Start Stream" and "Stop Stream" buttons.
 o	<footer>: Displays the footer text "SmartCam".
 o	<script src="script.js"></script>: Includes the JavaScript file that controls the WebRTC functionality.
-4. style.css
+5. style.css
 This CSS file styles the HTML elements, providing a clean and responsive interface.
 Key Styles:
 •	*: Universal selector, resets margin and padding.
@@ -59,7 +70,7 @@ Key Styles:
 •	main: Centers the main content vertically and horizontally.
 •	.video-container: Defines the video container size and aspect ratio.
 •	button: Styles the buttons, including hover effects and disabled state.
-5. script.js
+6. script.js
 This JavaScript file handles the client-side WebRTC functionality, managing the PeerConnection and signaling.
 Key Elements:
 •	const video = document.getElementById('videoStream');: References the video element.
@@ -72,7 +83,7 @@ o	pc.ontrack = (event) => { ... };: Attaches the received video track to the vid
 o	const offer = await pc.createOffer();: Creates an SDP offer and sets it as the local description.
 o	signaling.onmessage = async (event) => { ... };: Handles incoming messages from the server (SDP answers and ICE candidates).
 •	stopButton.addEventListener('click', () => { ... });: Handles the click event for stopping the stream, closing the connection and cleaning up resources.
-6. webserver.py
+7. webserver.py
 This Python script serves the HTML, CSS, and JavaScript files to the client and dynamically inserts the correct IP address for WebRTC signaling.
 Key Functions:
 •	get_local_ip(): Retrieves the local IP address of the machine running the web server.
