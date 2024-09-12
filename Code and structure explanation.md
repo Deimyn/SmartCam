@@ -39,70 +39,61 @@ It also connects necessary signals for handling negotiation and ICE candidates.
 -	int main(int argc, char* argv[]): Entry point of the program, initializes GStreamer, and starts the server.
   
 2. CMakeLists.txt
+   
 This file contains the build configuration for CMake, which compiles your project.
 Key Elements:
-•	project(webrtc_server VERSION 1.0): Defines the project name and version.
-•	set(CMAKE_CXX_STANDARD 14): Specifies the C++ standard to use.
-•	find_package(PkgConfig REQUIRED): Finds the PkgConfig tool, which is used to locate GStreamer packages.
-•	pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-webrtc-1.0 gstreamer-sdp-1.0): Checks for the required GStreamer modules.
-•	find_package(Boost 1.65 REQUIRED COMPONENTS system filesystem json): Finds and includes the Boost libraries.
-•	include_directories(${GST_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}): Adds include directories for GStreamer and Boost.
-•	add_executable(webrtc_server main.cpp): Defines the executable target for the project.
-•	target_link_libraries(webrtc_server ${GST_LIBRARIES} Boost::system Boost::filesystem Boost::json): Links the GStreamer and Boost libraries to the executable.
-4. index.html
-This is the main HTML file that provides a user interface for starting and stopping the WebRTC stream.
-Structure:
-•	<head>: Contains metadata, including the title and a link to the CSS stylesheet.
-•	<body>: Contains the main content:
-o	<header>: Displays the page title "Camera Stream".
-o	<main>: Contains the video element and control buttons.
-	<div class="video-container">: A container for the video stream, which maintains a 16:9 aspect ratio.
-	<video id="videoStream" autoplay playsinline muted></video>: Video element that will display the WebRTC stream.
-	<div class="button-container">: Contains "Start Stream" and "Stop Stream" buttons.
-o	<footer>: Displays the footer text "SmartCam".
-o	<script src="script.js"></script>: Includes the JavaScript file that controls the WebRTC functionality.
-5. style.css
-This CSS file styles the HTML elements, providing a clean and responsive interface.
-Key Styles:
-•	*: Universal selector, resets margin and padding.
-•	body: Sets the body font, background color, and layout.
-•	header: Styles the header with a background color and text alignment.
-•	main: Centers the main content vertically and horizontally.
-•	.video-container: Defines the video container size and aspect ratio.
-•	button: Styles the buttons, including hover effects and disabled state.
-6. script.js
+
+-	project(webrtc_server VERSION 1.0): Defines the project name and version.
+-	set(CMAKE_CXX_STANDARD 14): Specifies the C++ standard to use.
+-	find_package(PkgConfig REQUIRED): Finds the PkgConfig tool, which is used to locate GStreamer packages.
+-	pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-webrtc-1.0 gstreamer-sdp-1.0): Checks for the required GStreamer modules.
+-	find_package(Boost 1.65 REQUIRED COMPONENTS system filesystem json): Finds and includes the Boost libraries.
+-	include_directories(${GST_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}): Adds include directories for GStreamer and Boost.
+-	add_executable(webrtc_server main.cpp): Defines the executable target for the project.
+-	target_link_libraries(webrtc_server ${GST_LIBRARIES} Boost::system Boost::filesystem Boost::json): Links the GStreamer and Boost libraries to the executable.
+  
+3. index.html and style.css
+
+The main HTML file provides a user interface for starting and stopping the WebRTC stream.
+The CSS file styles the HTML elements, providing a clean and responsive interface.
+
+4. script.js
+   
 This JavaScript file handles the client-side WebRTC functionality, managing the PeerConnection and signaling.
-Key Elements:
-•	const video = document.getElementById('videoStream');: References the video element.
-•	let pc = null; let signaling = null;: Initializes variables for the RTCPeerConnection and WebSocket signaling.
-•	startButton.addEventListener('click', async () => { ... });: Handles the click event for starting the stream.
-o	pc = new RTCPeerConnection(...): Creates a new RTCPeerConnection with ICE server configuration.
-o	signaling = new WebSocket(ws://${machine1_ip}:8000/ws);: Establishes a WebSocket connection with the server.
-o	pc.onicecandidate = (event) => { ... };: Sends ICE candidates to the server.
-o	pc.ontrack = (event) => { ... };: Attaches the received video track to the video element.
-o	const offer = await pc.createOffer();: Creates an SDP offer and sets it as the local description.
-o	signaling.onmessage = async (event) => { ... };: Handles incoming messages from the server (SDP answers and ICE candidates).
-•	stopButton.addEventListener('click', () => { ... });: Handles the click event for stopping the stream, closing the connection and cleaning up resources.
-7. webserver.py
+
+-	const video = document.getElementById('videoStream');: References the video element.
+-	let pc = null; let signaling = null;: Initializes variables for the RTCPeerConnection and WebSocket signaling.
+-	startButton.addEventListener('click', async () => { ... });: Handles the click event for starting the stream.
+-	pc = new RTCPeerConnection(...): Creates a new RTCPeerConnection with ICE server configuration.
+-	signaling = new WebSocket(ws://${machine1_ip}:8000/ws);: Establishes a WebSocket connection with the server.
+-	pc.onicecandidate = (event) => { ... };: Sends ICE candidates to the server.
+-	pc.ontrack = (event) => { ... };: Attaches the received video track to the video element.
+-	const offer = await pc.createOffer();: Creates an SDP offer and sets it as the local description.
+-	signaling.onmessage = async (event) => { ... };: Handles incoming messages from the server (SDP answers and ICE candidates).
+-	stopButton.addEventListener('click', () => { ... });: Handles the click event for stopping the stream, closing the connection and cleaning up resources.
+  
+5. webserver.py
+
 This Python script serves the HTML, CSS, and JavaScript files to the client and dynamically inserts the correct IP address for WebRTC signaling.
-Key Functions:
-•	get_local_ip(): Retrieves the local IP address of the machine running the web server.
-•	get_machine1_ip(): Determines the IP address of the machine where the WebRTC server is running (machine 1).
-•	class CustomHandler(SimpleHTTPRequestHandler): Custom HTTP request handler that serves files.
-o	do_GET(self): Overrides the GET request handling:
-	If the request is for script.js, it reads the file, replaces the placeholder with the actual IP address, and serves it.
-	For other requests, it serves the files normally.
+
+-	get_local_ip(): Retrieves the local IP address of the machine running the web server.
+-	get_machine1_ip(): Determines the IP address of the machine where the WebRTC server is running (machine 1).
+-	class CustomHandler(SimpleHTTPRequestHandler): Custom HTTP request handler that serves files.
+-	do_GET(self): Overrides the GET request handling:
+-	If the request is for script.js, it reads the file, replaces the placeholder with the actual IP address, and serves it.
+-	For other requests, it serves the files normally.
 Main Section:
-•	if __name__ == "__main__":: The main block that sets up and runs the HTTP server.
-o	ip = get_local_ip(): Retrieves the IP address of the current machine.
-o	httpd = HTTPServer(server_address, CustomHandler): Initializes the HTTP server with the custom request handler.
-o	httpd.serve_forever(): Starts the server, serving files indefinitely.
-Overall Flow:
+-	if __name__ == "__main__":: The main block that sets up and runs the HTTP server.
+-	ip = get_local_ip(): Retrieves the IP address of the current machine.
+-	httpd = HTTPServer(server_address, CustomHandler): Initializes the HTTP server with the custom request handler.
+-	httpd.serve_forever(): Starts the server, serving files indefinitely.
+
+
+Overall:
 1.	Server Setup (main.cpp): The C++ application initializes a WebRTC server that handles incoming WebSocket connections and negotiates WebRTC streams using GStreamer.
 2.	Web Interface (index.html, style.css, script.js): A user opens the web interface in a browser, which connects to the WebRTC server, initiates a WebRTC connection, and streams the camera feed.
 3.	Web Server (webserver.py): A Python-based web server serves the web interface files, ensuring that the correct IP address is used for WebRTC signaling.
 This combination of C++, Python, HTML, CSS, and JavaScript creates a functional WebRTC-based camera streaming system.
-4o
 
 
 
